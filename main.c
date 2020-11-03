@@ -136,9 +136,9 @@ int main(void){
          -0.05f, -0.05f ,
          +0.05f, -0.05f ,
         //Criando um pentágono
-         +1.00f  +1.00f ,
-         +1.08f  +1.03f ,
-         +1.05f  +0.90f ,
+         +0.00f  +1.00f ,
+         +0.08f  +1.03f ,
+         +0.05f  +0.90f ,
     };
 
     GLuint buffer;
@@ -186,7 +186,7 @@ int main(void){
         };
         
         float mat_scale[16] = {
-            1.0f, sin(a), 0.0f, 0.0f,
+            1.0f, 0.00f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f
