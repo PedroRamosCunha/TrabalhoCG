@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#define pi 3.14
  
 
 // variaveis globais
@@ -130,24 +130,19 @@ int main(void){
     glLinkProgram(program);
     glUseProgram(program);
  
-/*
-    // Preparando dados para enviar a GPU
-    coordenadas vertices[3] = { // criando tres vertices e preenchendo
-        {  0.00f, +0.05f },
-        { -0.05f, -0.05f },
-        { +0.05f, -0.05f }
-    };*/
-
-    coordenadas vertices[4] = { // criando tres vertices e preenchendo
+    coordenadas vertices[7] = { // criando um quadrado
         { +0.05f, +0.05f },
         { -0.05f, +0.05f },
         { -0.05f, -0.05f },
-        { +0.05f, -0.05f }
+        { +0.05f, -0.05f },
+        //Criando um pentágono
+        { +1.00f  +1.00f },
+        { +1.08f  +1.03f },
+        { +1.05f  +0.90f },
     };
 
     GLuint buffer;
-    GLuint buffer2;
-    glGenBuffers(2, &buffer);
+    glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
 
@@ -183,6 +178,19 @@ int main(void){
             0.0f, 0.0f, 0.0f, 1.0f
         };
 
+        float mat_rotation[16] = {
+               s, 0.0f, 0.0f, 0.0f ,
+            0.0f,    s, 0.0f, 0.0f ,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+        
+        float mat_scale[16] = {
+            1.0f, sin(pi), 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
 
         // enviando a matriz de transformacao para a GPU, vertex shader, variavel mat_transformation
         loc = glGetUniformLocation(program, "mat_transformation");
@@ -190,8 +198,8 @@ int main(void){
 
     
 	 //renderizando
-        glDrawArrays(GL_POLYGON, 0, 5);
- 
+        glDrawArrays(GL_POLYGON, 0, 4);
+        glDrawArrays(GL_POLYGON, 4, 3);
         glfwSwapBuffers(window);
         
     }
