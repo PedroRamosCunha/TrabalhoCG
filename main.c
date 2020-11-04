@@ -1,17 +1,18 @@
-/* Trabalho 1 de Computação Gráfica - SSC0650
-
-Alunos:                                 Nº USP:
-    Marcos Antonio Victor Arce                  10684621
-    Pedro Ramos Cunha                           10892248
-
+/**
+ *  Title: Trabalho 1 de Computação Gráfica - SSC0650
+ * 
+ *  Alunos:                                     Nº USP:
+ *  Marcos Antonio Victor Arce                  10684621
+ *  Pedro Ramos Cunha                           10892248
+ *
+ *  Compilação no linux: gcc main.c -lglfw -lGL -lGLEW -lm
+ * 
 */
 
-/* para linux, instalar os pacotes libglfw3-dev mesa-common-dev libglew-dev */
-/* para compilar no linux: gcc main.c -lglfw -lGL -lGLEW -lm */
-
-/* para windows, instalar bibliotecas compiladas do glfw3 e glew no ambiente mingw */
-/* para compilar no windows: gcc main.c -lglfw3dll -lglew32 -lopengl32 */
-
+/**
+ *      Inclusão de Bibliotecas
+ * 
+*/
 #include <GL/glew.h>  
 #define  GLFW_DLL
 #define  GLFW_INCLUDE_NONE
@@ -21,51 +22,69 @@ Alunos:                                 Nº USP:
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
-#define pi 3.14
-#define M_PI 3.14159265358979323846
-#define TAM 0.2
- 
 
-// variaveis globais
+/**
+ *  Definições gerais
+ *  
+*/
+
+#define M_PI 3.14159265358979323846
+#define TAM 0.1
+#define TAM3 0.05
+
+/**
+ *  Struct de coordenadas de um ponto cartesiano em R^2.
+ *  
+*/
 typedef struct{
     float x, y;
 } coordenadas;
 
-float t_x   = 0.0f , t_x2   = 0.0f; 
-float t_y   = 0.0f , t_y2   = 0.0f;
-float s     = 1.0f , s2     = 1.0f;
-float angle = 0.0f , angle2 = 0.0f;
+/**
+ *  Variáveis da matriz de transformação. 
+ *  t_x e t_y são para translação automática da estrela
+ *  p_x e p_y são para translação do passáro
+ *  s é para escala da estrela
+ *  angle(n) é para rotação da estrela e da flor
+ * 
+*/
 
-// Funcao para processar eventos de teclado (W,A,S,D e setas)
+float t_x   =  0.0f, t_y = 0.0f;
+float p_x   =  0.0f, p_y = 0.0f;
+float s     =  1.0f;
+float angle =  0.0f , angle2 = 0.0f;
+
+/**
+ * Subrotina para receber eventos de I/O
+ *  No caso são para pegar as teclas do teclado.
+ *  Para funcionar, as configurações do teclado devem estar em Pt - Brasil
+ *  senão as setas não funcionam.
+*/
+
 static void key_event(GLFWwindow* window, int key, int scancode, int action, int mods){
-    //printf("Pressionando tecla %d\n", key);
 
-    if(key == 68) t_x += 0.01; // tecla D
-    if(key == 65) t_x -= 0.01; // tecla A
 
-    if(key == 87) t_y += 0.01; // tecla W
-    if(key == 83) t_y -= 0.01; // tecla S
+    // Primeira figura
+    if(key == 68 && p_x <  0.85) p_x += 0.01; // tecla D
+    if(key == 65 && p_x > -0.85) p_x -= 0.01; // tecla A
 
-    if(key == 265) s += 0.01; // seta para cima
-    if(key == 264) s -= 0.01; // seta para baixo   
+    if(key == 87 && p_y <  0.75) p_y += 0.01; // tecla W
+    if(key == 83 && p_y > -0.75) p_y -= 0.01; // tecla S
 
-    if(key == 263) angle += 0.01; // seta da direita
-    if(key == 262) angle -= 0.01; // seta da esquerda
+    if(key == 265 && s < 2.0f) s += 0.01; // seta para cima
+    if(key == 264 && s > 0.5f) s -= 0.01; // seta para baixo   
 
-    if(key == 326) t_x2 += 0.01; // tecla D
-    if(key == 324) t_x2 -= 0.01; // tecla A
-
-    if(key == 328) t_y2 += 0.01; // tecla W
-    if(key == 322) t_y2 -= 0.01; // tecla S
-
-    if(key == 323) s2 += 0.01; // seta para cima
-    if(key == 321) s2 -= 0.01; // seta para baixo   
-
-    if(key == 327) angle2 += 0.01; // seta da direita
-    if(key == 329) angle2 -= 0.01; // seta da esquerda
+    // Segunda figura
+    if(key == 263) angle2 += 0.01; // seta da direita
+    if(key == 262) angle2 -= 0.01; // seta da esquerda
 
 }
 
+
+/**
+ * Subrotina para a multiplicação de matrizes
+ * 
+*/
 void multiplyMatrix(float *a, float *b, float *res){
 
     for(int i = 0; i < 4; i++){
@@ -77,8 +96,11 @@ void multiplyMatrix(float *a, float *b, float *res){
     }
 
 }
-
- 
+/**
+ * Subrotina para traçar as coordenadas do primeiro objeto no
+ * vetor de coordenadas.
+ * As cordenadas do primeiro objeto vão de 0 a 17 posições do vetor.
+*/
 void drawFirstObject(coordenadas* vertices){
     vertices[0].x = 0.0f;
     vertices[0].y = 0.0f;
@@ -88,11 +110,11 @@ void drawFirstObject(coordenadas* vertices){
 
     for(int i = 1; i < 18 - 1; i++){
         if(i % 2 == 1){
-            vertices[i].x = TAM * cos(ang);
-            vertices[i].y = TAM * sin(ang);
+            vertices[i].x = 0.6 * TAM * cos(ang);
+            vertices[i].y = 0.6 * TAM * sin(ang);
         }else{
-            vertices[i].x = 0.5 * TAM * cos(ang);
-            vertices[i].y = 0.5 * TAM * sin(ang);
+            vertices[i].x = 0.3 * TAM * cos(ang);
+            vertices[i].y = 0.3 * TAM * sin(ang);
         }
 
         ang += step;
@@ -102,61 +124,82 @@ void drawFirstObject(coordenadas* vertices){
     vertices[17].y = vertices[1].y;
 }
 
-void drawSecondObject(coordenadas* vertices){
-    unsigned int flag = 1; 
-    
-    srand(time(NULL));
+void drawThirdObject(coordenadas* vertices){
 
-    for (int i = 18; i < 36; i++){
-        if(flag){
-            vertices[i].x = 0.0000f;
-            vertices[i].y = 0.0000f;
-            flag = 0;
-        }else{
-            vertices[i].x = 0.0001*(rand()%5000);
-            vertices[i].y = 0.0001*(rand()%5000);
-            flag++;
-        }
+    coordenadas third[] = {
+         0.0f, 0.0f,
+         1.0f, 3.0f,
+         0.0f, 1.0f,
+        -1.0f, 3.0f,
+         2.0f, 0.0f,
+         1.0f, 1.0f,
+        -1.0f, 1.0f,
+        -2.0f, 0.0f,
+         2.0f, 0.0f
+    };
+    
+    for(int i = 0; i < sizeof(third); i++){
+        vertices[i + 70].x = TAM3 * third[i].x;
+        vertices[i + 70].y = TAM3 * third[i].y;
     }
 }
-
-void drawThirdObject(coordenadas* vertices){
+/**
+ * Subrotina para traçar as coordenadas do segundo objeto no
+ * vetor de coordenadas.
+ * As cordenadas do segundo objeto vão de 17 a 69 posições do vetor.
+*/
+void drawSecondObject(coordenadas* vertices){
     float step = M_PI/6;
     float ang = 0.0f;
 
-    for (int i = 36; i < 84; i+=4){
+    for (int i = 18; i < 66; i+=4){
         float smallstep = step/7;
 
         vertices[i].x = 0.0f;
         vertices[i].y = 0.0f;
 
-        vertices[i+1].x = 0.8 * TAM * cos(ang + 2 * smallstep);
-        vertices[i+1].y = 0.8 * TAM * sin(ang + 2 * smallstep);
+        vertices[i+1].x = 0.7 * TAM * cos(ang + 2 * smallstep);
+        vertices[i+1].y = 0.7 * TAM * sin(ang + 2 * smallstep);
 
-        vertices[i+2].x = 1.1 * TAM * cos(ang + 4 * smallstep);
-        vertices[i+2].y = 1.1 * TAM * sin(ang + 4 * smallstep);
+        vertices[i+2].x = 1.0 * TAM * cos(ang + 4 * smallstep);
+        vertices[i+2].y = 1.0 * TAM * sin(ang + 4 * smallstep);
 
-        vertices[i+3].x = 0.8 * TAM * cos(ang + 6 * smallstep);
-        vertices[i+3].y = 0.8 * TAM * sin(ang + 6 * smallstep);    
+        vertices[i+3].x = 0.7 * TAM * cos(ang + 6 * smallstep);
+        vertices[i+3].y = 0.7 * TAM * sin(ang + 6 * smallstep);    
 
         ang += step;
     }
 
-        vertices[84].x = 0.002f;
-        vertices[84].y = 0.0f;
+        vertices[66].x = 0.002f;
+        vertices[66].y = 0.0f;
 
-        vertices[85].x = -0.002f;
-        vertices[85].y = 0.0f;
+        vertices[67].x = -0.002f;
+        vertices[67].y = 0.0f;
 
-        vertices[86].x = -0.002f;
-        vertices[86].y = -0.4f;
+        vertices[68].x = -0.002f;
+        vertices[68].y = -0.3f;
 
-        vertices[87].x = +0.002f;
-        vertices[87].y = -0.4f;
+        vertices[69].x = +0.002f;
+        vertices[69].y = -0.3f;
 }
+
+
+
+/**
+ * Main
+ * Nela as chamadas das funções de inicialização das janelas e 
+ * ações junto a GPU (envio das matrizes de tranformação, do vetor de coordenadas, etc)
+ * 
+*/
+
+
 
 int main(void){
     
+/**
+ * Inicialização da janela do gflow
+ *  
+*/
     glfwInit();
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     GLFWwindow* window = glfwCreateWindow(1000, 800, "Trabalho 1", NULL, NULL);
@@ -164,7 +207,10 @@ int main(void){
     GLint GlewInitResult = glewInit();
     printf("GlewStatus: %s", glewGetErrorString(GlewInitResult));
 
-    // GLSL para Vertex Shader
+/**
+ * Conficuração do vertex shader GLSL
+ * 
+*/
     char* vertex_code =
     "attribute vec2 position;\n"
     "uniform mat4 mat_transformation;\n"
@@ -173,7 +219,10 @@ int main(void){
     "    gl_Position = mat_transformation*vec4(position, 0.0, 1.0);\n"
     "}\n";
 
-    // GLSL para Fragment Shader
+/**
+ * Configuração do Fragment Shader para GLSL
+ * 
+*/
     char* fragment_code =
     "uniform vec4 color;\n"
     "void main()\n"
@@ -181,71 +230,78 @@ int main(void){
     "    gl_FragColor = color;\n"
     "}\n";
 
-    // Requisitando slot para a GPU para nossos programas Vertex e Fragment Shaders
+    /**
+     * Funções de solicitação de slots da GPU para o vertex e fragment
+     * e funções de compilação e teste das configurações do vertex.
+     * 
+    */
     GLuint program = glCreateProgram();
     GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-
-    // Associando nosso código-fonte GLSL aos slots solicitados
     glShaderSource(vertex, 1, &vertex_code, NULL);
     glShaderSource(fragment, 1, &fragment_code, NULL);
-
-    // Compilando o Vertex Shader e verificando erros
     glCompileShader(vertex);
-
     GLint isCompiled = 0;
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &isCompiled);
+    
+    /**
+     * Tratamento do Erro de compilação do vertex
+     * 
+    */
     if(isCompiled == GL_FALSE){
-
-        //descobrindo o tamanho do log de erro
         int infoLength = 512;
         glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &infoLength);
-
-        //recuperando o log de erro e imprimindo na tela
         char info[infoLength];
         glGetShaderInfoLog(vertex, infoLength, NULL, info);
 
         printf("Erro de compilacao no Vertex Shader.\n");
         printf("--> %s\n",&info);
-
     }
 
     
-    // Compilando o Fragment Shader e verificando erros
+    
+    /**
+     * Funções de teste e compilação do Fragment
+     * 
+    */
     glCompileShader(fragment);
-
     isCompiled = 0;
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &isCompiled);
-    if(isCompiled == GL_FALSE){
 
-        //descobrindo o tamanho do log de erro
+    /**
+     * Tratamento do Erro de compilação do fragment
+     * 
+    */
+    if(isCompiled == GL_FALSE){
         int infoLength = 512;
         glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &infoLength);
-
-        //recuperando o log de erro e imprimindo na tela
         char info[infoLength];
         glGetShaderInfoLog(fragment, infoLength, NULL, info);
-
         printf("Erro de compilacao no Fragment Shader.\n");
         printf("--> %s\n",&info);
-
     }
 
-    // Associando os programas compilado ao programa principal
+
+    /**
+     *  Funçoes de linkagem com a janela.
+    */
     glAttachShader(program, vertex);
     glAttachShader(program, fragment);
-
-    // Linkagem do programa e definindo como default
     glLinkProgram(program);
     glUseProgram(program);
     
-    //Array das coordenadss dos objetos
-    coordenadas vertices[87];
+    
+    
+    /**
+     * Vetor de coordenadas
+     * 
+    */
+    coordenadas vertices[79];
 
     // Desenhar objetos
     drawFirstObject(vertices);  // Estrela
-    drawSecondObject(vertices); // Random
-    drawThirdObject(vertices);  // Flor
+    drawSecondObject(vertices); // Flor
+    drawThirdObject(vertices);  // Passáro
 
     // Cria um buffer e conecta-o
     GLuint buffer;
@@ -255,11 +311,12 @@ int main(void){
     // Envia para o buffer as coordenadas
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
-    // Associar variáveis posição e cor do programa GLSL (Vertex Shaders)
+    // Localizar variável posição do programa GLSL (Vertex Shaders)
     GLint loc = glGetAttribLocation(program, "position");
     glEnableVertexAttribArray(loc);
     glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) 0);
 
+    // Localizar variável cor 
     GLint loc_color = glGetUniformLocation(program, "color");
 
     // Gerenciar eventos do teclado
@@ -268,6 +325,10 @@ int main(void){
     // Exibir janela
     glfwShowWindow(window);
 
+
+    float x = 0.0f, step = M_PI/900;
+    int mult = 1.0;
+
     while (!glfwWindowShouldClose(window)){
 
         glfwPollEvents();
@@ -275,9 +336,24 @@ int main(void){
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.0, 0.0, 0.0, 1.0);
 
+        // Recebendo a localização da matriz de transformação
+        loc = glGetUniformLocation(program, "mat_transformation");
+
         float mat_aux[16];
         float mat_final[16];
 
+        //////// PRIMEIRO OBJETO
+        t_x = x;
+        t_y = mult * 0.1 * sin(4*x); // Faz o caminho da senoide
+        
+        if(fabs(t_y) < 0.001f && fabs(x) > 0.001f){
+            step *= (-1);
+            mult *= (-1);
+        }
+            
+        x += step;
+
+        // MATRIZ DE ESCALA
         float mat_scale[16] = {
             s   , 0.0f, 0.0f, 0.0f,
             0.0f,    s, 0.0f, 0.0f,
@@ -285,6 +361,7 @@ int main(void){
             0.0f, 0.0f, 0.0f, 1.0f
         };
         
+        // MATRIZ DE ROTAÇÃO
         float mat_rotation[16] = {
             cos(angle), -sin(angle), 0.0f, 0.0f,
             sin(angle),  cos(angle), 0.0f, 0.0f,
@@ -292,36 +369,49 @@ int main(void){
             0.0f      ,  0.0f      , 0.0f, 1.0f
         };
 
-        // criando a matriz de translacao
+        // MATRIZ DE TRANSLAÇÃO
         float mat_translation[16] = {
-            1.0f, 0.0f, 0.0f, t_x - 0.2f,
-            0.0f, 1.0f, 0.0f, t_y ,
+            1.0f, 0.0f, 0.0f, t_x ,
+            0.0f, 1.0f, 0.0f, t_y + 0.5f,
             0.0f, 0.0f, 1.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f
         };
-        
+
+        // Multiplica as matrizes
         multiplyMatrix(mat_rotation, mat_scale, mat_aux);
         multiplyMatrix(mat_translation, mat_aux, mat_final);
 
+        // Para deixar a estrela girando
+        angle -= 0.005;
 
-        // enviando a matriz de transformacao para a GPU, vertex shader, variavel mat_transformation
-        loc = glGetUniformLocation(program, "mat_transformation");
+        //Enviando a matriz de transformação para essa figura
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_final);
 
-	    //renderizando
+	    //Renderizando a cor
         glUniform4f(loc_color, 254.0/255.0, 254.0/255.0, 68.0/255.0, 1.0f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 18);
 
-        mat_scale[0] = s2;
-        mat_scale[5] = s2;
+
+        //////// SEGUNDO OBJETO
+        
+        // Alterando a matriz de translação para o segundo objeto
+        mat_translation[3] = -0.6f;
+        mat_translation[7] = -0.55f;
+
+        glUniformMatrix4fv(loc, 1, GL_TRUE, mat_translation);
+
+        // Cabo da flor
+        glUniform4f(loc_color, 0.0, 128.0/255.0, 0.0/255.0, 1.0f); // Cor verde
+        glDrawArrays(GL_TRIANGLE_STRIP, 66, 4);
+
+        // Alterando as matrizes de rotação e escala para o segundo objeto
+        mat_scale[0] = 1.0f;
+        mat_scale[5] = 1.0f;
 
         mat_rotation[0] = cos(angle2);
         mat_rotation[1] = -sin(angle2);
         mat_rotation[4] = sin(angle2);
-        mat_rotation[5] = cos(angle2);
-
-        mat_translation[3] = t_x2 + 0.2f;
-        mat_translation[7] = t_y2;
+        mat_rotation[5] = cos(angle2);        
         
         multiplyMatrix(mat_rotation, mat_scale, mat_aux);
         multiplyMatrix(mat_translation, mat_aux, mat_final);
@@ -329,18 +419,24 @@ int main(void){
         // enviando a matriz de transformacao para a GPU, vertex shader, variavel mat_transformation
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_final);
     
-	    //renderizando
-        glUniform4f(loc_color, 254.0/255.0, 254.0/255.0, 68.0/255.0, 1.0f);
-        glDrawArrays(GL_TRIANGLE_STRIP, 18, 17);
-
-
+        // Cor roxa das pétalas
         glUniform4f(loc_color, 150.0/255.0, 0.0, 205.0/255.0, 1.0f);
-
+        
         for(int j = 0; j < 12; j++)
-            glDrawArrays(GL_TRIANGLE_FAN, 36 + 4*j, 4);
-           
-        glUniform4f(loc_color, 184.0/255.0, 115.0/255.0, 51.0/255.0, 1.0f);
-        glDrawArrays(GL_TRIANGLE_STRIP, 84, 4);
+            glDrawArrays(GL_TRIANGLE_FAN, 18 + 4*j, 4);
+
+        //////// TERCEIRO OBJETO
+
+        // Alterando a matriz de translação para o terceiro objeto
+        mat_translation[3] = p_x;
+        mat_translation[7] = p_y;        
+
+        glUniformMatrix4fv(loc, 1, GL_TRUE, mat_translation);
+
+	    //renderizando
+        glUniform4f(loc_color, 107.0/255.0, 142.0/255.0, 35.0/255.0, 1.0f);
+        glDrawArrays(GL_TRIANGLE_FAN, 70, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 74, 5);
 
         glfwSwapBuffers(window);
     }
