@@ -68,7 +68,7 @@ static void key_event(GLFWwindow* window, int key, int scancode, int action, int
     if(key == 68 && p_x <  0.85) p_x += 0.01; // tecla D
     if(key == 65 && p_x > -0.85) p_x -= 0.01; // tecla A
 
-    if(key == 87 && p_y <  0.75) p_y += 0.01; // tecla W
+    if(key == 87 && p_y <  0.62) p_y += 0.01; // tecla W
     if(key == 83 && p_y > -0.75) p_y -= 0.01; // tecla S
 
     if(key == 265 && s < 2.0f) s += 0.01; // seta para cima
