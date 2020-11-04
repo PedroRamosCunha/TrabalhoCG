@@ -1,9 +1,16 @@
+/* Trabalho 1 de Computação Gráfica - SSC0650
+
+Alunos:                                 Nº USP:
+    Marcos Antonio Victor Arce                  10684621
+    Pedro Ramos Cunha                           10892248
+
+*/
+
 /* para linux, instalar os pacotes libglfw3-dev mesa-common-dev libglew-dev */
 /* para compilar no linux: gcc main.c -lglfw -lGL -lGLEW -lm */
 
 /* para windows, instalar bibliotecas compiladas do glfw3 e glew no ambiente mingw */
 /* para compilar no windows: gcc main.c -lglfw3dll -lglew32 -lopengl32 */
-
 
 #include <GL/glew.h>  
 #define  GLFW_DLL
@@ -72,16 +79,90 @@ void multiplyMatrix(float *a, float *b, float *res){
 }
 
  
+void drawFirstObject(coordenadas* vertices){
+    vertices[0].x = 0.0f;
+    vertices[0].y = 0.0f;
+
+    float step = M_PI/8;
+    float ang = 0.0f;
+
+    for(int i = 1; i < 18 - 1; i++){
+        if(i % 2 == 1){
+            vertices[i].x = TAM * cos(ang);
+            vertices[i].y = TAM * sin(ang);
+        }else{
+            vertices[i].x = 0.5 * TAM * cos(ang);
+            vertices[i].y = 0.5 * TAM * sin(ang);
+        }
+
+        ang += step;
+    }
+
+    vertices[17].x = vertices[1].x;
+    vertices[17].y = vertices[1].y;
+}
+
+void drawSecondObject(coordenadas* vertices){
+    unsigned int flag = 1; 
+    
+    srand(time(NULL));
+
+    for (int i = 18; i < 36; i++){
+        if(flag){
+            vertices[i].x = 0.0000f;
+            vertices[i].y = 0.0000f;
+            flag = 0;
+        }else{
+            vertices[i].x = 0.0001*(rand()%5000);
+            vertices[i].y = 0.0001*(rand()%5000);
+            flag++;
+        }
+    }
+}
+
+void drawThirdObject(coordenadas* vertices){
+    float step = M_PI/6;
+    float ang = 0.0f;
+
+    for (int i = 36; i < 84; i+=4){
+        float smallstep = step/7;
+
+        vertices[i].x = 0.0f;
+        vertices[i].y = 0.0f;
+
+        vertices[i+1].x = 0.8 * TAM * cos(ang + 2 * smallstep);
+        vertices[i+1].y = 0.8 * TAM * sin(ang + 2 * smallstep);
+
+        vertices[i+2].x = 1.1 * TAM * cos(ang + 4 * smallstep);
+        vertices[i+2].y = 1.1 * TAM * sin(ang + 4 * smallstep);
+
+        vertices[i+3].x = 0.8 * TAM * cos(ang + 6 * smallstep);
+        vertices[i+3].y = 0.8 * TAM * sin(ang + 6 * smallstep);    
+
+        ang += step;
+    }
+
+        vertices[84].x = 0.002f;
+        vertices[84].y = 0.0f;
+
+        vertices[85].x = -0.002f;
+        vertices[85].y = 0.0f;
+
+        vertices[86].x = -0.002f;
+        vertices[86].y = -0.4f;
+
+        vertices[87].x = +0.002f;
+        vertices[87].y = -0.4f;
+}
+
 int main(void){
- 
-    unsigned flag=1;    
+    
     glfwInit();
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    GLFWwindow* window = glfwCreateWindow(800, 800, "Trabalho 1", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1000, 800, "Trabalho 1", NULL, NULL);
     glfwMakeContextCurrent(window);
     GLint GlewInitResult = glewInit();
     printf("GlewStatus: %s", glewGetErrorString(GlewInitResult));
-
 
     // GLSL para Vertex Shader
     char* vertex_code =
@@ -97,7 +178,7 @@ int main(void){
     "uniform vec4 color;\n"
     "void main()\n"
     "{\n"
-    "    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+    "    gl_FragColor = color;\n"
     "}\n";
 
     // Requisitando slot para a GPU para nossos programas Vertex e Fragment Shaders
@@ -130,7 +211,6 @@ int main(void){
     }
 
     
-
     // Compilando o Fragment Shader e verificando erros
     glCompileShader(fragment);
 
@@ -159,97 +239,41 @@ int main(void){
     glLinkProgram(program);
     glUseProgram(program);
     
-     
-    //Object 1 
-    coordenadas vertices[73];
+    //Array das coordenadss dos objetos
+    coordenadas vertices[87];
 
-    vertices[0].x = 0.0f;
-    vertices[0].y = 0.0f;
+    // Desenhar objetos
+    drawFirstObject(vertices);  // Estrela
+    drawSecondObject(vertices); // Random
+    drawThirdObject(vertices);  // Flor
 
-    float step = M_PI/8;
-    float ang = 0.0f;
-
-    for(int i = 1; i < 18 - 1; i++){
-        if(i % 2 == 1){
-            vertices[i].x = TAM * cos(ang);
-            vertices[i].y = TAM * sin(ang);
-        }else{
-            vertices[i].x = 0.5 * TAM * cos(ang);
-            vertices[i].y = 0.5 * TAM * sin(ang);
-        }
-
-        ang += step;
-    }
-
-    vertices[17].x = vertices[1].x;
-    vertices[17].y = vertices[1].y;
-
-
-    srand(time(NULL));
-    //Object 2
-    for (int i = 18; i < 36; i++)
-    {
-        if(flag)
-        {
-            vertices[i].x = 0.0000f;
-            vertices[i].y = 0.0000f;
-            flag = 0;
-        }
-        else
-        {
-        vertices[i].x = 0.0001*(rand()%5000);
-        vertices[i].y = 0.0001*(rand()%5000);
-        flag++;
-        }
-    }
-    vertices[35].x = vertices[18].x;
-    vertices[35].y = vertices[18].y;
-
-    step = M_PI/6;
-    angle = 0.0f;
-
-    for (int i = 37; i < sizeof(vertices); i+=3){
-        float smallstep = step/5;
-        vertices[i].x = 0.8 * TAM * cos(angle + 2 * smallstep);
-        vertices[i].y = 0.8 * TAM * sin(angle + 2 * smallstep);
-
-        vertices[i+1].x = 1.0 * TAM * cos(angle + 3 * smallstep);
-        vertices[i+1].y = 1.0 * TAM * sin(angle + 3 * smallstep);
-
-        vertices[i+2].x = 0.8 * TAM * cos(angle + 4 * smallstep);
-        vertices[i+2].y = 0.8 * TAM * sin(angle + 4 * smallstep);    
-
-        angle += step;
-    }
-
-    vertices[36] = vertices[72];
-
+    // Cria um buffer e conecta-o
     GLuint buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
-    // Abaixo, nós enviamos todo o conteúdo da variável vertices.
+    // Envia para o buffer as coordenadas
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
-    // Associando variáveis do programa GLSL (Vertex Shaders) com nossos dados
+    // Associar variáveis posição e cor do programa GLSL (Vertex Shaders)
     GLint loc = glGetAttribLocation(program, "position");
     glEnableVertexAttribArray(loc);
-    glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) 0); // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml
- 
+    glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) 0);
 
-    // Associando nossa janela com eventos de teclado
-    glfwSetKeyCallback(window, key_event); // teclado
+    GLint loc_color = glGetUniformLocation(program, "color");
 
-    // Exibindo nossa janela
+    // Gerenciar eventos do teclado
+    glfwSetKeyCallback(window, key_event);
+
+    // Exibir janela
     glfwShowWindow(window);
 
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)){
 
         glfwPollEvents();
 
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(6.0, 1.0, 3.0, 1.0);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
 
         float mat_aux[16];
         float mat_final[16];
@@ -285,8 +309,9 @@ int main(void){
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_final);
 
 	    //renderizando
+        glUniform4f(loc_color, 254.0/255.0, 254.0/255.0, 68.0/255.0, 1.0f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 18);
-    
+
         mat_scale[0] = s2;
         mat_scale[5] = s2;
 
@@ -302,15 +327,20 @@ int main(void){
         multiplyMatrix(mat_translation, mat_aux, mat_final);
 
         // enviando a matriz de transformacao para a GPU, vertex shader, variavel mat_transformation
-        loc = glGetUniformLocation(program, "mat_transformation");
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_final);
     
-	 //renderizando
-        //glDrawArrays(GL_TRIANGLE_STRIP, 18, 18);
+	    //renderizando
+        glUniform4f(loc_color, 254.0/255.0, 254.0/255.0, 68.0/255.0, 1.0f);
+        glDrawArrays(GL_TRIANGLE_STRIP, 18, 17);
 
-        for(int j = 0; j < 12; j++){
-            glDrawArrays(GL_TRIANGLE_STRIP, 37 + 3*j, 3);
-        }
+
+        glUniform4f(loc_color, 150.0/255.0, 0.0, 205.0/255.0, 1.0f);
+
+        for(int j = 0; j < 12; j++)
+            glDrawArrays(GL_TRIANGLE_FAN, 36 + 4*j, 4);
+           
+        glUniform4f(loc_color, 184.0/255.0, 115.0/255.0, 51.0/255.0, 1.0f);
+        glDrawArrays(GL_TRIANGLE_STRIP, 84, 4);
 
         glfwSwapBuffers(window);
     }
